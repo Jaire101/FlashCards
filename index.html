@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Flashcards — Simple, Client‑Side</title>
+  <link rel="stylesheet" href="style.css">
+  <!--<style>
+    :root {
+      --bg: #0f172a;           /* slate-900 */
+      --panel: #111827;        /* gray-900 */
+      --card: #0b1220;         /* custom dark */
+      --muted: #94a3b8;        /* slate-400 */
+      --text: #e5e7eb;         /* gray-200 */
+      --accent: #60a5fa;       /* blue-400 */
+      --accent-2: #34d399;     /* emerald-400 */
+      --danger: #f87171;       /* red-400 */
+      --radius: 16px;
+      --shadow: 0 10px 25px rgba(0,0,0,.35), 0 2px 8px rgba(0,0,0,.2);
+      --shadow-soft: 0 6px 16px rgba(0,0,0,.25);
+      --gap: 1rem;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      background: radial-gradient(1200px 800px at 20% -10%, #1e293b 0%, var(--bg) 60%);
+      color: var(--text);
+    }
+
+    header {
+      position: sticky; top: 0; z-index: 10;
+      background: linear-gradient(180deg, rgba(15,23,42,.9), rgba(15,23,42,.6));
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid rgba(255,255,255,.06);
+    }
+    .wrap { max-width: 1100px; margin: 0 auto; padding: 1rem; }
+    .bar { display:flex; align-items:center; gap: 1rem; }
+    .title { font-weight: 800; letter-spacing: .2px; }
+    .title span { color: var(--accent); }
+    .spacer { flex: 1; }
+
+    button, input, textarea {
+      font: inherit; color: inherit; border: none; outline: none;
+    }
+    .btn {
+      display:inline-flex; align-items:center; gap:.5rem; cursor:pointer;
+      background: linear-gradient(180deg, #1f2937, #111827);
+      color: var(--text); border: 1px solid rgba(255,255,255,.08);
+      padding:.6rem .9rem; border-radius: 999px; box-shadow: var(--shadow-soft);
+      transition: transform .08s ease, box-shadow .2s ease, background .2s ease;
+    }
+    .btn:hover { transform: translateY(-1px); }
+    .btn:active { transform: translateY(0); }
+    .btn.primary { background: linear-gradient(180deg, #2563eb, #1d4ed8); box-shadow: 0 8px 24px rgba(37,99,235,.35); }
+    .btn.success { background: linear-gradient(180deg, #10b981, #059669); box-shadow: 0 8px 24px rgba(16,185,129,.35); }
+    .btn.ghost { background: transparent; border: 1px solid rgba(255,255,255,.14); }
+
+    .controls { display:flex; gap:.5rem; flex-wrap: wrap; }
+
+    .new-card {
+      display:grid; grid-template-columns: 1fr; gap:.75rem; margin-top: .75rem;
+      background: linear-gradient(180deg, #0b1220, #0a0f1a);
+      border: 1px solid rgba(255,255,255,.06);
+      padding: 1rem; border-radius: var(--radius); box-shadow: var(--shadow-soft);
+    }
+    .new-card label { font-size:.9rem; color: var(--muted); }
+    .new-card textarea, .new-card input[type="text"] {
+      width: 100%; background: #0d1424; border: 1px solid rgba(255,255,255,.06);
+      padding:.75rem .8rem; border-radius: 12px; min-height: 64px; resize: vertical;
+    }
+    .new-card .row { display:grid; grid-template-columns: 1fr 1fr; gap:.75rem; }
+    @media (max-width: 720px) { .new-card .row { grid-template-columns: 1fr; } }
+
+    .grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: var(--gap); padding: 1rem; max-width: 1100px; margin: 0 auto 4rem;
+    }
+
+    .flip {
+      perspective: 1200px; position: relative; height: 180px; cursor: pointer;
+      user-select: none; -webkit-tap-highlight-color: transparent;
+    }
+    .card {
+      position: absolute; inset: 0; border-radius: var(--radius);
+      transform-style: preserve-3d; transition: transform 640ms cubic-bezier(.2,.8,.2,1), box-shadow .2s ease;
+      background: var(--card); border: 1px solid rgba(255,255,255,.06);
+      box-shadow: var(--shadow);
+    }
+    .card:hover { box-shadow: 0 14px 32px rgba(0,0,0,.5); }
+    .card.is-flipped { transform: rotateY(180deg); }
+
+    .side {
+      position:absolute; inset:0; display:flex; flex-direction:column; justify-content:center; align-items:center;
+      padding: 1rem; backface-visibility: hidden; border-radius: var(--radius);
+    }
+    .front { background: radial-gradient(600px 400px at -10% -20%, rgba(96,165,250,.18), transparent), var(--card); }
+    .back  { background: radial-gradient(600px 400px at 110% 120%, rgba(52,211,153,.18), transparent), var(--card); transform: rotateY(180deg); }
+    .q, .a { font-size: 1.05rem; line-height: 1.4; text-align:center; }
+    .meta { position:absolute; bottom: .6rem; left:.8rem; right:.8rem; display:flex; justify-content:space-between; font-size:.78rem; color: var(--muted); pointer-events: none; }
+
+    .toolbar { position:absolute; top: .5rem; right:.5rem; display:flex; gap:.35rem; }
+    .icon-btn { width: 34px; height: 34px; display:grid; place-items:center; border-radius: 10px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.08); cursor: pointer; }
+    .icon-btn:hover { background: rgba(255,255,255,.1); }
+    .visually-hidden { position:absolute !important; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); border:0; white-space: nowrap; }
+
+    .empty { opacity: .75; text-align:center; max-width: 700px; margin: 6vh auto; }
+
+    footer { text-align:center; color: var(--muted); padding: 2rem 1rem 3rem; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .card { transition: transform 0.001s linear; }
+    }
+  </style>-->
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <div class="bar">
+        <h1 class="title">Flashcards <span>Lite</span></h1>
+        <div class="spacer"></div>
+        <div class="controls" role="group" aria-label="Flashcard controls">
+          <button id="addExample" class="btn ghost" title="Add example set">➕ Examples</button>
+          <button id="shuffle" class="btn ghost" title="Shuffle cards">🔀 Shuffle</button>
+          <button id="clearAll" class="btn" style="background: linear-gradient(180deg,#374151,#1f2937);" title="Delete all">🗑️ Clear</button>
+          <button id="exportBtn" class="btn" title="Export as JSON">⬇️ Export</button>
+          <label class="btn" for="importInput" title="Import JSON">⬆️ Import</label>
+          <input id="importInput" type="file" accept="application/json" class="visually-hidden" />
+        </div>
+      </div>
+
+      <form id="newCardForm" class="new-card" autocomplete="off">
+        <div class="row">
+          <div>
+            <label for="question">Front (Question)</label>
+            <textarea id="question" placeholder="e.g., What is the capital of Japan?" required></textarea>
+          </div>
+          <div>
+            <label for="answer">Back (Answer)</label>
+            <textarea id="answer" placeholder="e.g., Tokyo" required></textarea>
+          </div>
+        </div>
+        <div style="display:flex; gap:.5rem; align-items:center; justify-content:flex-end;">
+          <button type="reset" class="btn ghost" title="Reset form">Reset</button>
+          <button type="submit" class="btn primary" title="Add flashcard">Add Flashcard</button>
+        </div>
+      </form>
+    </div>
+  </header>
+
+  <main id="app">
+    <div id="emptyState" class="empty" hidden>
+      <h2>No cards yet</h2>
+      <p>Use the form above to add your first flashcard or load an example set.</p>
+    </div>
+    <section id="grid" class="grid" aria-live="polite"></section>
+  </main>
+
+  <footer>
+    <small>All client‑side • Data saved locally in your browser • Built with ♥</small>
+  </footer>
+
+  <template id="cardTemplate">
+    <article class="flip" tabindex="0" role="button" aria-pressed="false" aria-label="Flip flashcard">
+      <div class="card" aria-live="polite">
+        <div class="toolbar" aria-hidden="false">
+          <button class="icon-btn" data-action="flip" title="Flip (Space/Enter)">⤾</button>
+          <button class="icon-btn" data-action="edit" title="Edit">✎</button>
+          <button class="icon-btn" data-action="delete" title="Delete">🗑</button>
+        </div>
+        <div class="side front">
+          <div class="q"></div>
+          <div class="meta"><span>Front</span><span>Click to flip</span></div>
+        </div>
+        <div class="side back">
+          <div class="a"></div>
+          <div class="meta"><span>Back</span><span>Click to flip</span></div>
+        </div>
+      </div>
+    </article>
+  </template>
+
+  <script>
+    // --- Storage Helpers -----------------------------------------------------
+    const STORAGE_KEY = 'flashcards-lite.v1';
+    const store = {
+      load() {
+        try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+        catch { return []; }
+      },
+      save(cards) { localStorage.setItem(STORAGE_KEY, JSON.stringify(cards)); }
+    };
+
+    // --- State ---------------------------------------------------------------
+    let cards = store.load();
+
+    // --- DOM Refs ------------------------------------------------------------
+    const grid = document.getElementById('grid');
+    const emptyState = document.getElementById('emptyState');
+    const tpl = document.getElementById('cardTemplate');
+    const form = document.getElementById('newCardForm');
+
+    const btnShuffle = document.getElementById('shuffle');
+    const btnClear = document.getElementById('clearAll');
+    const btnAddExample = document.getElementById('addExample');
+    const btnExport = document.getElementById('exportBtn');
+    const inputImport = document.getElementById('importInput');
+
+    // --- Utilities -----------------------------------------------------------
+    const uid = () => Math.random().toString(36).slice(2, 9);
+
+    function render() {
+      grid.innerHTML = '';
+      if (!cards.length) {
+        emptyState.hidden = false; return;
+      } else emptyState.hidden = true;
+      const frag = document.createDocumentFragment();
+      for (const card of cards) frag.appendChild(createCardEl(card));
+      grid.appendChild(frag);
+      store.save(cards);
+    }
+
+    function createCardEl(card) {
+      const node = tpl.content.firstElementChild.cloneNode(true);
+      const inner = node.querySelector('.card');
+      const qEl = node.querySelector('.q');
+      const aEl = node.querySelector('.a');
+      qEl.textContent = card.q; aEl.textContent = card.a;
+
+      function flip() {
+        inner.classList.toggle('is-flipped');
+        node.setAttribute('aria-pressed', inner.classList.contains('is-flipped'));
+      }
+
+      node.addEventListener('click', (e) => {
+        const act = e.target.closest('[data-action]');
+        if (!act) return flip();
+        const type = act.getAttribute('data-action');
+        if (type === 'flip') flip();
+        if (type === 'delete') removeCard(card.id);
+        if (type === 'edit') editCard(card.id, qEl, aEl, inner);
+        e.stopPropagation();
+      });
+
+      node.addEventListener('keydown', (e) => {
+        if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flip(); }
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'e') { e.preventDefault(); editCard(card.id, qEl, aEl, inner); }
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'd') { e.preventDefault(); removeCard(card.id); }
+      });
+
+      return node;
+    }
+
+    function addCard(q, a) {
+      cards.unshift({ id: uid(), q: q.trim(), a: a.trim() });
+      render();
+    }
+
+    function removeCard(id) {
+      cards = cards.filter(c => c.id !== id);
+      render();
+    }
+
+    function editCard(id, qEl, aEl, inner) {
+      const i = cards.findIndex(c => c.id === id);
+      if (i === -1) return;
+      const q = prompt('Edit front (question):', cards[i].q);
+      if (q === null) return;
+      const a = prompt('Edit back (answer):', cards[i].a);
+      if (a === null) return;
+      cards[i].q = q.trim();
+      cards[i].a = a.trim();
+      qEl.textContent = cards[i].q;
+      aEl.textContent = cards[i].a;
+      inner.classList.remove('is-flipped');
+      store.save(cards);
+    }
+
+    // --- Form Handling -------------------------------------------------------
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const q = document.getElementById('question');
+      const a = document.getElementById('answer');
+      if (!q.value.trim() || !a.value.trim()) return;
+      addCard(q.value, a.value);
+      form.reset();
+      q.focus();
+    });
+
+    // --- Buttons -------------------------------------------------------------
+    btnShuffle.addEventListener('click', () => {
+      for (let i = cards.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [cards[i], cards[j]] = [cards[j], cards[i]];
+      }
+      render();
+    });
+
+    btnClear.addEventListener('click', () => {
+      if (confirm('Delete ALL flashcards? This cannot be undone.')) {
+        cards = []; render();
+      }
+    });
+
+    btnAddExample.addEventListener('click', () => {
+      const examples = [
+        { q: 'What is 7 × 8?', a: '56' },
+        { q: 'Capital of Japan?', a: 'Tokyo' },
+        { q: 'HTTP stands for?', a: 'HyperText Transfer Protocol' },
+        { q: '“Hola” translates to…', a: 'Hello (Spanish → English)' },
+        { q: 'Water chemical formula?', a: 'H₂O' },
+      ];
+      cards = [...examples.map(x => ({ id: uid(), ...x })), ...cards];
+      render();
+    });
+
+    btnExport.addEventListener('click', () => {
+      const data = JSON.stringify(cards.map(({q,a}) => ({q,a})), null, 2);
+      const blob = new Blob([data], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'flashcards.json'; a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    });
+
+    inputImport.addEventListener('change', async (e) => {
+      const file = e.target.files?.[0]; if (!file) return;
+      try {
+        const text = await file.text();
+        const parsed = JSON.parse(text);
+        if (!Array.isArray(parsed)) throw new Error('Invalid file: expected an array');
+        const cleaned = parsed
+          .map(it => ({ q: String(it.q ?? '').trim(), a: String(it.a ?? '').trim() }))
+          .filter(it => it.q && it.a)
+          .map(it => ({ id: uid(), ...it }));
+        if (!cleaned.length) throw new Error('No valid cards found');
+        cards = [...cleaned, ...cards];
+        render();
+      } catch (err) {
+        alert('Import failed: ' + err.message);
+      } finally {
+        e.target.value = '';
+      }
+    });
+
+    // --- Initial render ------------------------------------------------------
+    render();
+  </script>
+</body>
+</html>
